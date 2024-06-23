@@ -1,0 +1,80 @@
+https://www.cuemath.com/geometry/intersection-of-two-lines/
+
+https://www.topcoder.com/thrive/articles/Geometry%20Concepts%20part%202:%20%20Line%20Intersection%20and%20its%20Applications
+
+
+
+Computing point in polygon, use standard code.
+
+
+Slope intercept of a line
+
+m = Slope = rise/run = (y2 - y1) / (x2 - x1)
+
+y = mx + b
+
+After solving slope, plug data for one point and slope into slope intercept formula and solve for b
+
+p1 = (100, 150)
+p2 = (85, 120)
+
+m = (120 - 150) / (85 - 100)
+  = -30 / -15
+  = 2
+
+b = y - mx
+b = 150 - 2(100)
+b = 150 - 200
+b = -50
+
+
+If ball ends up in hazard area (point in polygon)
+using shot position and ball stop position, determine if stop position is within polygon
+    if so, find where ball crossed the polygon  
+        (test line information with each side of the polygon for intersection)
+
+return zero vector or vector of intersection
+
+
+
+Yellow hazard
+    1. Stroke and distance - penalty point plus take next shot from location of previous shot
+    2. Drop behind the hazard, on a straight line between the hole and where the ball last crossed into the hazard
+        In the drop, the ball can roll up to 1 club length either side of that line
+    3. Local rule allows for a drop zone
+
+
+Red Hazard
+    1. Use relief from yellow hazard area
+    2. Drop ball within 2 club lengths of the point the ball crossed into the penalty area, not closer to the hole
+
+Unplayable ball (inside area ball cannot be played, or in bunker)
+    1. Stroke and distance
+    2. Drop behind the hazard, on a straight line between the hole and where the ball lies, behind the ball
+        In the drop, the ball can roll up to 1 club length either side of that line
+    3. Drop ball within 2 club lengths of the ball, not closer to the hole
+    4. When applying relief in bunker, the 2 club length or back on line options must remain within bunker
+    5. In bunker, can take "back on line" relief to any point outside the bunker, costs 2 penalty strokes
+
+
+Stroke and distance: take shot from last shot location
+Back on line: play on line between ball (or hazard cross point) and the hole
+2 Club Length: Drop ball within 2 club lengths of ball pos or hazard crossing point, NOT closer to the hole
+
+
+Playing from a green into a bunker or water, you can take stroke and distance as relief, leaving you still playing from the green
+** shot stroke, penalty stroke and using relief.
+
+
+
+
+
+
+Score card should offer options to the player after each shot:
+1.  Default: Play the ball as it lies
+2.  Stroke and distance: safe zone is legal play area from last shot position
+3.  Back on the line: safe zone is 1 club length either side of a line from the ball to the pin, an distance from the pin but no closer
+4.  2 Club Length: used for red hazards (and lateral water hazards)
+5.  Drop zone (if applied by local rules)
+
+When using and relief, score card should include "walk to" capability to put player on/near the legal playing position
