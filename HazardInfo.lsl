@@ -28,11 +28,16 @@ list pointsFlown = [
 
 SetUpData()
 {
-    string json = llList2Json(JSON_OBJECT, [ "name", "West Water", "type", "Water" ]); // , "points", 0 ]);
+    string json = llList2Json(JSON_OBJECT, [ 
+        "name", "West Water", 
+        "type", "Water" ]);
     json = llJsonSetValue(json, [ "points" ], llList2Json(JSON_ARRAY, intoWater));
     llLinksetDataWrite("HAZARD_001", json);
 
-    json = llList2Json(JSON_OBJECT, [ "name", "Water Behind 1", "type", "Water" ]); // , "points", 0 ]);
+    json = llList2Json(JSON_OBJECT, [ 
+        "name", "Water Behind 1", 
+        "type", "Water", 
+        "dropZone", "DZ1" ]);
     json = llJsonSetValue(json, [ "points"], llList2Json(JSON_ARRAY, waterBehind1));
     llLinksetDataWrite("HAZARD_002", json);
 }
