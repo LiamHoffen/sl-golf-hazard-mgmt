@@ -13,6 +13,7 @@ Modules must be able to support
 - Reading course-owner definitions of hazard areas and drop zone definitions
 - Compute if ball landed in a hazard and the point where it crossed into that hazard N.B.
 - Compute safe locations from which to play for along the line, 2 club lengths and drop zones
+- Must accomodate regions abutting regions, 2-region courses
 
 Score cards must:
 - Pass ball flight path to this module
