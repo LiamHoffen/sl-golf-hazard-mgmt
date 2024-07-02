@@ -8,6 +8,8 @@ https://www.randa.org/en/rog/the-rules-of-golf/rule-17
 https://collegiategolf.com/news/538-usga-rules-dropping-zones
 
 
+Video of how hazards work
+https://youtu.be/gfjY8G79MEI
 
 Modules must be able to support  
 - Reading course-owner definitions of hazard areas and drop zone definitions
