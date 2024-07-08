@@ -1,9 +1,8 @@
-#define URL_REQUEST_CHANNEL 123
-
 #define TEST_BALL_DATA 45001
 #define BALL_DATA_RESULTS 45002
 
-integer urlRequestListener;
+#define HAZARD_PROCESSING_COMM_CHANNEL 123
+
 key getUrlKey;
 string myURL;
 list httpRequests = [];
@@ -12,10 +11,7 @@ default
 {
     state_entry()
     {
-        if (urlRequestListener != 0)
-            llListenRemove(urlRequestListener);
-            
-        urlRequestListener = llListen(URL_REQUEST_CHANNEL, "", NULL_KEY, "");
+        llListen(HAZARD_PROCESSING_COMM_CHANNEL, "", NULL_KEY, "");
         getUrlKey = llRequestURL();
     }
     on_rez(integer param)
@@ -42,6 +38,7 @@ default
         else if (method == "POST")
         {
             httpRequests += [ id ];
+            llOwnerSay(body);
             llMessageLinked(LINK_THIS, TEST_BALL_DATA, body, id);
         }
     }

@@ -1,6 +1,8 @@
 #define TEST_BALL_DATA 45001
 #define BALL_DATA_RESULTS 45002
 
+string hazardPrefix = "HAZARD_";
+
 list workingPolygon;
 
 list adjRegionTest = [];
@@ -32,6 +34,7 @@ FindAdjacentRegions()
     llSleep(0.1);
 }
 
+// Did the ball end up in a defined hazard area or off sim?
 string DetectedHazard(vector tp)
 {
     list pointList;
@@ -45,7 +48,7 @@ string DetectedHazard(vector tp)
     else if ((tp.y > 255.0) && (llJsonGetValue(adjacentRegionsJson, [ "North" ]) == JSON_INVALID))
         return "OffSim-North";
 
-    list keys = llLinksetDataFindKeys("HAZARD_", 0, 0);
+    list keys = llLinksetDataFindKeys(hazardPrefix, 0, 0);
     integer i;
     for (i = 0; i < llGetListLength(keys); ++i)
     {
@@ -122,11 +125,11 @@ integer isPointInPolygon2D( list vLstPolygon, vector vPosTesting )
     return vBooInPlygn;
 }
 
+// walk list of ballPoints, starting with the last, and find the first pair that are in and outside the polygon
 list ComputePolygonCrossing(string areaName, list ballPoints)
 {
     list results;
 
-    // walk list of ballPoints, starting with the last, and find the first pair that are in and outside the polygon
     integer i;
     integer limit = llGetListLength(ballPoints);
     for (i = limit - 2; i >= 0; --i)
@@ -141,6 +144,7 @@ list ComputePolygonCrossing(string areaName, list ballPoints)
     return results;
 }
 
+// Determine the intersection of 2 line segments in order to see what segment of a polygon (hazard area) the ball flight crossed.
 vector FindIntersection(vector p1, vector p2)
 {
     float A1 = p2.y - p1.y;
@@ -171,14 +175,14 @@ vector FindIntersection(vector p1, vector p2)
             if (pointOnSegment(answer, p1, p2))
                 return answer;
         }
-        else if (A2 == 0.0)
-        {
+        // else if (A2 == 0.0)
+        // {
 
-        }
-        else if (B2 == 0.0)
-        {
+        // }
+        // else if (B2 == 0.0)
+        // {
             
-        }
+        // }
     }
     return ZERO_VECTOR;
 }
@@ -195,10 +199,11 @@ float max(float v1, float v2)
         return v1;
     return v2;
 }
-integer pointOnSegment(vector pt, vector seg1, vector seg2)
+
+integer pointOnSegment(vector pt, vector segStart, vector segEnd)
 {
-    return (pt.x >= min(seg1.x, seg2.x) && pt.x <= max(seg1.x, seg2.x))
-        && (pt.y >= min(seg1.y, seg2.y) && pt.y <= max(seg1.y, seg2.y));
+    return (pt.x >= min(segStart.x, segEnd.x) && pt.x <= max(segStart.x, segEnd.x))
+        && (pt.y >= min(segStart.y, segEnd.y) && pt.y <= max(segStart.y, segEnd.y));
 }
 
 default
@@ -206,6 +211,15 @@ default
     state_entry()
     {
         FindAdjacentRegions();
+    }
+    on_rez(integer param)
+    {
+        llResetScript();
+    }
+    changed(integer change)
+    {
+        if (change & (CHANGED_REGION | CHANGED_REGION_START | CHANGED_OWNER))
+            llResetScript();
     }
     link_message(integer sender, integer num, string msg, key id)
     {
@@ -220,13 +234,15 @@ default
 
             list data = [ 
                 "ballStop", lastPoint,
-                "hazard", llGetSubString(touchArea, llStringLength("HAZARD_"), -1) ];
+                "hazard", llGetSubString(touchArea, llStringLength(hazardPrefix), -1) ];
 
             if (touchArea != "")
             {
                 string hazardJson = llLinksetDataRead(touchArea);
 
                 string hazardType = llJsonGetValue(hazardJson, [ "type" ]);
+                data += [ "hazardType", hazardType ];
+
                 list holes = llParseString2List(llJsonGetValue(hazardJson, [ "holes"]), [ ", ", ",", " " ], []);
                 string dzInfo = llJsonGetValue(hazardJson, [ "dropzones"]);
 
@@ -240,7 +256,7 @@ default
                         list parts = llParseString2List(llList2String(dzData, i), [ ", ", ","], []);
                         if ((integer)llList2String(parts, 0) == currentHole)
                         {
-                            string dz = llLinksetDataRead("HAZARD_" + llStringTrim(llList2String(parts, 1), STRING_TRIM));
+                            string dz = llLinksetDataRead(hazardPrefix + llStringTrim(llList2String(parts, 1), STRING_TRIM));
                             data += [ "dropZone", dz];
                         }
                     }
@@ -248,34 +264,41 @@ default
 
 
                 list crossingResults = ComputePolygonCrossing(touchArea, points);
-                vector crossingPoint;
-
+                vector crossingPoint = lastPoint;
                 if (llGetListLength(crossingResults) == 3)
-                {
                     crossingPoint = llList2Vector(crossingResults, 2);
-                    data += [ "crossing", crossingPoint ];
-                    
-                    string pinPosStr = llJsonGetValue(msg, [ "pinPos" ]);
-                    if (pinPosStr != JSON_INVALID)
-                    {
-                        vector pinPos = (vector)pinPosStr;
-                        float slope = 0.0;
-                        if (pinPos.x - crossingPoint.x != 0.0)
-                            slope = (pinPos.y - crossingPoint.y) / (pinPos.x - crossingPoint.x);
 
-                        float yIntercept = crossingPoint.y - (slope * crossingPoint.x);
+                data += [ "crossing", crossingPoint ];
 
-                        float A1 = pinPos.y - crossingPoint.y;
-                        float B1 = crossingPoint.x - pinPos.x;
-                        float C1 = (A1 * crossingPoint.x) + (B1 * crossingPoint.y);
+                string pinPosStr = llJsonGetValue(msg, [ "pinPos" ]);
+                if (pinPosStr != JSON_INVALID)
+                {
+                    vector pinPos = (vector)pinPosStr;
+                    float slope = 0.0;
+                    integer deltaYIsDist = FALSE;
+                    integer deltaXIsDist = FALSE;
 
-                        list output = [
-                            "slope", slope,
-                            "yIntercept", yIntercept,
-                            "stdForm", llList2Json(JSON_OBJECT, [ "A", A1, "B", B1, "C", C1 ])
-                            ];
-                        data += [ "behindTheLineFormula", llList2Json(JSON_OBJECT, output)];
-                    }
+                    if (pinPos.x - crossingPoint.x == 0.0)
+                        deltaYIsDist = TRUE;
+                    else if (pinPos.y - crossingPoint.y == 0.0)
+                        deltaXIsDist = TRUE;
+                    else
+                        slope = (pinPos.y - crossingPoint.y) / (pinPos.x - crossingPoint.x);
+
+                    float yIntercept = crossingPoint.y - (slope * crossingPoint.x);
+
+                    // float A1 = pinPos.y - crossingPoint.y;
+                    // float B1 = crossingPoint.x - pinPos.x;
+                    // float C1 = (A1 * crossingPoint.x) + (B1 * crossingPoint.y);
+
+                    list output = [
+                        "deltaYIsDist", deltaYIsDist,
+                        "deltaXIsDist", deltaXIsDist,
+                        "slope", slope,
+                        "yIntercept", yIntercept
+                        // , "stdForm", llList2Json(JSON_OBJECT, [ "A", A1, "B", B1, "C", C1 ])
+                        ];
+                    data += [ "alongTheLine", llList2Json(JSON_OBJECT, output)];
                 }
             }
             msg = llJsonSetValue(msg, [ "results" ], llList2Json(JSON_OBJECT, data));
