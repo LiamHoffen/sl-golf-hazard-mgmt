@@ -12,17 +12,16 @@ Video of how hazards work
 https://youtu.be/gfjY8G79MEI
 
 Modules must be able to support  
-- Reading course-owner definitions of hazard areas and drop zone definitions
-- Compute if ball landed in a hazard and the point where it crossed into that hazard N.B.
-- Compute safe locations from which to play for along the line, 2 club lengths and drop zones
-- Must accomodate regions abutting regions, 2-region courses
+- Reading course-owner definitions of hazard areas and drop zone definitions ** complete
+- Compute if ball landed in a hazard and the point where it crossed into that hazard ** complete
+- Compute safe locations from which to play for along the line, 2 club lengths and drop zones ** complete
+- Must accomodate regions abutting regions, 2-region courses ** (must further develop)
 
 Score cards must:
-- Pass ball flight path to this module
-- Receive info about hazards in play
-- Request info for available relief from hazard
-- Allow user to select the type of relief to apply for a hazard
-- Allow next shot legally based upon proper use of relief
+- Pass ball flight path to this module ** complete
+- Receive info about hazards in play ** complete
+- Request info for available relief from hazard ** complete
+- Allow user to select the type of relief to apply for a hazard ** complete
+- Allow next shot legally based upon proper use of relief ** (in development)
 
 
-N.B. - module for computing in hazard area and point of crossing is now coded
